@@ -38,19 +38,19 @@
 export default {
   name:'s-region-slider',
   props: {
-    fillValue: { 
+    fillValue: { // 最大可滑动距离
       type: Number,
       default: 1000,
     },
-    minValue: { 
+    minValue: { // 默认 滑动的区间 最小数据
       type: Number,
       default: 0,
     },
-    maxValue: { 
+    maxValue: { // 默认 滑动的区间 最大数据
       type: Number,
       default: 1000,
     },
-    step: { 
+    step: { // 滑动的结果 只能是step的倍数
       type: Number,
       default: 50,
     },
@@ -60,18 +60,18 @@ export default {
       tipShow:false,
       tipLeft:0,
 
-      minLeft: 0, 
-      maxLeft: 0, 
+      minLeft: 0, // 左侧圆的left值
+      maxLeft: 0, // 右侧圆的left值
       
-      touchWidth:50, 
+      touchWidth:50, // 圆圈的直径(和css保持一致)
 
-      lineWidth:0, 
-      lineLeft:0, 
+      lineWidth:0, // 线的长度
+      lineLeft:0, // line到窗口的Left
 
-      curValue:0, 
-      sMinValue:0, 
-      sMaxValue:0, 
-      percentage: 0, 
+      curValue:0, // 当前的数值
+      sMinValue:0, // 滑动后最小的数值
+      sMaxValue:0, // 滑动后最大的数值
+      percentage: 0, // 用户设定的最大数值/line的宽px = 一个像素所对应的数值; // 用来计算每滑动一个像素对应的数据是多少
 
     };
   },
@@ -94,6 +94,7 @@ export default {
   },
   methods: {
     touchstart(e, type) {
+      
       this.$emit('down', {
         ...e,
         custom:{
@@ -135,12 +136,12 @@ export default {
     },
     touchend(e, type) {
       if(type === 'min') {
-        const stepnum = Math.round((this.minLeft * this.percentage) / this.step); 
+        const stepnum = Math.round((this.minLeft * this.percentage) / this.step); // 四舍五入得到,滑动了多少个step
         this.sMinValue = stepnum * this.step;
         this.minLeft = this.sMinValue / this.percentage;
       }
       if(type === 'max') {
-        const stepnum = Math.round((this.maxLeft * this.percentage) / this.step);  
+        const stepnum = Math.round((this.maxLeft * this.percentage) / this.step); // 四舍五入得到,滑动了多少个step
         this.sMaxValue = stepnum * this.step;
         if(this.fillValue - this.sMaxValue < this.step) { this.sMaxValue =  this.fillValue} 
         this.maxLeft = this.sMaxValue / this.percentage;
