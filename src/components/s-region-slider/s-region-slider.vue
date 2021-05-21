@@ -108,17 +108,17 @@ export default {
       if(disX < 0 || disX > this.lineWidth ) { return;}
 
       if(type === 'min'){
-        this.minLeft = disX;
-        if(this.minLeft <= 0) { this.minLeft = 0; return; }
+        this.minLeft = Math.floor(disX);
+        if(this.minLeft < 0) { this.minLeft = 0; return; }
         if(this.maxLeft - this.minLeft <= this.touchWidth ) {this.minLeft = this.maxLeft - this.touchWidth; return;}
         this.curValue = Math.floor(this.minLeft * this.percentage);
       }
       
       if(type === 'max'){
-        this.maxLeft = e.touches[0].clientX  - this.lineLeft;
-        if(this.maxLeft >= this.lineWidth) { this.maxLeft = this.lineWidth; return; }
+        this.maxLeft =  Math.ceil(disX);
+        if(this.maxLeft > this.lineWidth) { this.maxLeft = this.lineWidth; return; }
         if(this.maxLeft - this.minLeft <= this.touchWidth ) {this.maxLeft = this.minLeft + this.touchWidth;return;}
-        this.curValue = Math.floor(this.maxLeft * this.percentage);
+        this.curValue = Math.round(this.maxLeft * this.percentage);
       }
       this.tipShow = true;
       this.tipLeft = Math.round(this.curValue / this.percentage - 15);
@@ -135,15 +135,23 @@ export default {
     },
     touchend(e, type) {
       if(type === 'min') {
-        const stepnum = Math.round((this.minLeft * this.percentage) / this.step); 
-        this.sMinValue = stepnum * this.step;
-        this.minLeft = this.sMinValue / this.percentage;
+        if(this.step === 1){
+          this.sMinValue = this.curValue;
+        }else{
+          const stepnum = Math.round((this.minLeft * this.percentage) / this.step); 
+          this.sMinValue = stepnum * this.step;
+          this.minLeft = this.sMinValue / this.percentage;
+        }
       }
       if(type === 'max') {
-        const stepnum = Math.round((this.maxLeft * this.percentage) / this.step);  
-        this.sMaxValue = stepnum * this.step;
-        if(this.fillValue - this.sMaxValue < this.step) { this.sMaxValue =  this.fillValue} 
-        this.maxLeft = this.sMaxValue / this.percentage;
+        if(this.step === 1){
+          this.sMaxValue = this.curValue;
+        }else{
+          const stepnum = Math.round((this.maxLeft * this.percentage) / this.step);  
+          this.sMaxValue = stepnum * this.step;
+          if(this.fillValue - this.sMaxValue < this.step) { this.sMaxValue =  this.fillValue} 
+          this.maxLeft = this.sMaxValue / this.percentage;
+        }
       }
       this.tipShow = false;
       this.$emit('up', {

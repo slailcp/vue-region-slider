@@ -1,6 +1,6 @@
 <template>
 		<view style="margin-top:200rpx;padding:100rpx;">
-			<s-region-slider :minValue="300" :maxValue="700" :step="40" @up="up"  @down="down"  @move="move" />
+			<s-region-slider :minValue="300" :maxValue="700" :step="1" @up="up"  @down="down"  @move="move" />
 		</view>
 </template>
 
