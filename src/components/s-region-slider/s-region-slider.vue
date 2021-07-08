@@ -55,6 +55,16 @@ export default {
       default: 50,
     },
   },
+  watch: {
+    minValue(newVal, oldVla){
+      this.sMinValue = this.minValue;
+      this.minLeft = this.sMinValue / this.percentage;
+    },
+    maxValue(newVal, oldVla){
+      this.sMaxValue =  this.maxValue;
+      this.maxLeft = this.sMaxValue / this.percentage;
+    }
+  },
   data() {
     return {
       tipShow:false,
@@ -76,20 +86,22 @@ export default {
     };
   },
   mounted(){
-    createSelectorQuery(this).select('.fj-touch-left').boundingClientRect().exec((data)=>{
-      this.touchWidth = data[0].width;
-    })
-    createSelectorQuery(this).select('.fj-line').boundingClientRect().exec((ret)=>{
-      this.lineWidth = ret[0].width;
-      this.lineLeft = ret[0].left
-      this.maxLeft = this.lineWidth;
-      this.percentage = this.fillValue / this.lineWidth;
+	 this.$nextTick(() => {
+		createSelectorQuery(this).select('.fj-touch-left').boundingClientRect().exec((data)=>{
+		  this.touchWidth = data[0].width;
+		})
+		createSelectorQuery(this).select('.fj-line').boundingClientRect().exec((ret)=>{
+		  this.lineWidth = ret[0].width;
+		  this.lineLeft = ret[0].left
+		  this.maxLeft = this.lineWidth;
+		  this.percentage = this.fillValue / this.lineWidth;
 
-      this.sMinValue = this.minValue;
-      this.sMaxValue =  this.maxValue;
-      this.minLeft = this.sMinValue / this.percentage;
-      this.maxLeft = this.sMaxValue / this.percentage;
-    });
+		  this.sMinValue = this.minValue;
+		  this.sMaxValue =  this.maxValue;
+		  this.minLeft = this.sMinValue / this.percentage;
+		  this.maxLeft = this.sMaxValue / this.percentage;
+		});
+	})
 
   },
   methods: {
