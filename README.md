@@ -7,7 +7,14 @@
 npm i -S vue-region-slider
 
 ## 导入
-```import sllRegionSlider from '@/pages/s-region-slider/s-region-slider.vue';```
+// mian.js
+import vueRegionSlider from 'vue-region-slider'
+import 'vue-region-slider/vue-region-slider/vue-region-slider.css'
+Vue.use(vueRegionSlider)
+
+// template.vue
+<vue-region-slider :minValue="300" :maxValue="700" :step="40" @up="up"  @down="down"  @move="move" />
+
 
 ## 方法说明
 **属性**
@@ -33,9 +40,9 @@ npm i -S vue-region-slider
 | curValue  | 互动过程中的值, **注:此项只有move方法中才会有值,down和up不存在curValue**    |
 ### 使用案例
 ```
-<view style="margin-top:200rpx;padding:100rpx;">
+<div style="margin-top:200px;padding:100px;">
 	<s-region-slider :minValue="300" :maxValue="700" :step="40" @up="up"  @down="down"  @move="move" />
-</view>
+</div>
 
 	export default {
 		components: {sRegionSlider},
