@@ -7,6 +7,7 @@
 npm i -S vue-region-slider
 
 ## 导入
+```js
 // mian.js
 import vueRegionSlider from 'vue-region-slider'
 import 'vue-region-slider/vue-region-slider/vue-region-slider.css'
@@ -14,7 +15,7 @@ Vue.use(vueRegionSlider)
 
 // template.vue
 <vue-region-slider :minValue="300" :maxValue="700" :step="40" @up="up"  @down="down"  @move="move" />
-
+```
 
 ## 方法说明
 **属性**
