@@ -3,8 +3,8 @@
 ## 简介
 有些项目涉及到价格选择,需要用到区间滑动,s-region-slider是基于uni-app开发的slider, 脱离了原生的slider,使用纯view+css+js开发的插件;
 
-## 兼容说明
-s-region-slider 在pc、H5-mobile、微信小程序、支付宝小程序、字节跳动小程序均已测试通过，其他平台没做过测试,如使用的时候碰到问题,可提出反馈,作者会及时调整。
+## 安裝
+npm i -S vue-region-slider
 
 ## 导入
 ```import sllRegionSlider from '@/pages/s-region-slider/s-region-slider.vue';```
