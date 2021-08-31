@@ -1,40 +1,51 @@
 <template>
-  <view class="fj-slider-box">
-    <view class="fj-slider">
-      <view class="fj-value">
-        <view class="fj-v-l">¥{{sMinValue}}</view>
-        <view class="fj-v-r">¥{{sMaxValue}}</view>
-      </view>
-      <view
-        class="fj-touch-left"
-        @touchstart="touchstart($event, 'min')"
-        @touchmove="touchmove($event, 'min')"
-        @touchend="touchend($event, 'min')"
-        :style="{left:`${minLeft}px`}"
-      ></view>
-      <view
-        class="fj-touch-right"
-        @touchstart="touchstart($event, 'max')"
-        @touchmove="touchmove($event, 'max')"
-        @touchend="touchend($event, 'max')"
-        :style="{left:`${maxLeft}px`}"
-      ></view>
-      <view class="tip" :style="{left:`${tipLeft}px`,display: tipShow ? 'block' : 'none'}">{{curValue}}</view>
-      <view class="fj-line-pull" :style="{left: `${minLeft + touchWidth/2}px`, width:`${maxLeft - minLeft}px`}"></view>
-      <view class="fj-line"></view>
-    </view>
-  </view>
+	<view clipchildren= false>
+	  <text class="loading" :style="{opacity: lineLeft===0 ? '1' : '0'}">loading...</text>
+	  <view class="fj-slider-box" :style="{opacity: lineLeft!==0 ? '1' : '0'}" clipchildren= false>
+		<view class="fj-value">
+			<text class="fj-v-l">¥{{sMinValue}}</text>
+			<text class="fj-v-r">¥{{sMaxValue}}</text>
+		</view>
+		<text class="tip" :style="{left:`${tipLeft}px`,opacity: tipShow ? '1' : '0'}">{{curValue}}</text>
+		<view class="fj-slider" clipchildren= false>
+		  <view class="fj-line" ref="fj-line"></view>
+		  <view class="fj-line-pull" :style="{left: `${minLeft + touchWidth/2}px`, width:`${maxLeft - minLeft}px`}"></view>
+		  <view
+			class="fj-touch-left" ref="fjtouchleft"
+			@touchstart="touchstart($event, 'min')"
+			@touchmove="touchmove($event, 'min')"
+			@touchend="touchend($event, 'min')"
+			:style="{left:`${minLeft}px`}"
+		  >
+		  </view>
+		  <view
+			class="fj-touch-right"
+			@touchstart="touchstart($event, 'max')"
+			@touchmove="touchmove($event, 'max')"
+			@touchend="touchend($event, 'max')"
+			:style="{left:`${maxLeft}px`}"
+		  >
+		  </view>
+		</view>
+	  </view>
+	</view>
 </template>
 
 
 <script>
+// #ifndef APP-PLUS
  const createSelectorQuery = (that) => {
   let  query = uni.createSelectorQuery().in(that);
   // #ifdef MP-ALIPAY
   query = my.createSelectorQuery();
-  // #endif
+  // #endif 
   return query;
 }
+// #endif
+
+// #ifdef APP-PLUS
+const dom = weex.requireModule('dom');
+// #endif
 export default {
   name:'s-region-slider',
   props: {
@@ -73,7 +84,7 @@ export default {
       minLeft: 0, 
       maxLeft: 0, 
       
-      touchWidth:50, 
+      touchWidth:30, 
 
       lineWidth:0, 
       lineLeft:0, 
@@ -81,32 +92,70 @@ export default {
       curValue:0, 
       sMinValue:0, 
       sMaxValue:0, 
-      percentage: 0, 
-
+      percentage: 0
     };
   },
   mounted(){
-	 this.$nextTick(() => {
-		createSelectorQuery(this).select('.fj-touch-left').boundingClientRect().exec((data)=>{
-		  this.touchWidth = data[0].width;
+	 this.$nextTick().then(() => {
+		this.envir({
+			classname:'.fj-touch-left',
+			refname:this.$refs.fjtouchleft,
+			fn:(ret)=>{
+				this.touchWidth = ret.width;
+			}
 		})
-		createSelectorQuery(this).select('.fj-line').boundingClientRect().exec((ret)=>{
-		  this.lineWidth = ret[0].width;
-		  this.lineLeft = ret[0].left
-		  this.maxLeft = this.lineWidth;
-		  this.percentage = this.fillValue / this.lineWidth;
-
-		  this.sMinValue = this.minValue;
-		  this.sMaxValue =  this.maxValue;
-		  this.minLeft = this.sMinValue / this.percentage;
-		  this.maxLeft = this.sMaxValue / this.percentage;
-		});
+		this.envir({
+			classname:'.fj-line', 
+			refname:this.$refs['fj-line'],
+			fn:(ret)=>{
+				  this.lineWidth = ret.width;
+				  this.lineLeft = ret.left;// 
+				 
+				  this.percentage = this.fillValue / this.lineWidth;
+				
+				  this.sMinValue = this.minValue;
+				  this.sMaxValue =  this.maxValue; 
+				  this.minLeft = this.sMinValue / this.percentage;
+				  this.maxLeft = this.sMaxValue / this.percentage;
+			}
+		})
 	})
 
   },
   methods: {
+	envir(opt){
+		setTimeout(() => {
+			// #ifdef APP-PLUS
+			dom.getComponentRect(opt.refname, ret => {
+				const option = ret.size
+				opt.fn({
+					width: option.width,
+					height:option.height,
+					top: option.top,
+					bottom: option.bottom,
+					left: option.left,
+					right: option.right,
+				})
+			})
+			// #endif
+			
+			// #ifndef APP-PLUS
+			createSelectorQuery(this).select(opt.classname).boundingClientRect().exec((data)=>{
+			  const option = data[0];
+			  opt.fn({
+			  	width: option.width,
+			  	height:option.height,
+			  	top: option.top,
+			  	bottom: option.bottom,
+			  	left: option.left,
+			  	right: option.right,
+			  })
+			})
+			// #endif
+		},200)
+	},
     touchstart(e, type) {
-      this.$emit('down', {
+      this.$emit('down', { 
         ...e,
         custom:{
           type,
@@ -116,7 +165,12 @@ export default {
       })
     },
     touchmove(e, type) {
+	  // #ifndef APP-PLUS
       const disX = e.touches[0].clientX - this.lineLeft
+	  // #endif
+	  // #ifdef APP-PLUS
+	   const disX = e.touches[0].screenX - this.lineLeft
+	   // #endif
       if(disX < 0 || disX > this.lineWidth ) { return;}
 
       if(type === 'min'){
@@ -133,7 +187,9 @@ export default {
         this.curValue = Math.round(this.maxLeft * this.percentage);
       }
       this.tipShow = true;
-      this.tipLeft = Math.round(this.curValue / this.percentage - 15);
+      this.tipLeft = Math.round(this.curValue / this.percentage);
+	  this.tipLeft = this.tipLeft >= this.lineWidth?this.lineWidth:this.tipLeft
+	  this.tipLeft = this.tipLeft <= 0?0:this.tipLeft
       this.$emit('move', {
         ...e,
         custom:{
@@ -180,52 +236,50 @@ export default {
 </script>
 
 
-<style lang="scss" scoped>
-$touchWidth: 50rpx; /** circle的宽度 */
-view {
-  box-sizing: border-box;
-}
-.fj-slider-box{padding-top:40rpx;
-  .fj-v-l,.fj-v-r{position: absolute;font-size: 24rpx;top:-40rpx;}
-  .fj-v-l{left:0}
-  .fj-v-r{right:0}
-}
+<style scoped>
+.fj-slider-box{padding-top:20px;font-size:12px;}
+.loading{font-size:12px;}
+.fj-value{position: relative;height:20px;}
+.fj-v-l,.fj-v-r{font-size: 12px;position: absolute;}
+.fj-v-l{left:0;}
+.fj-v-r{right:0;}
+
 .fj-slider {
   position: relative;
-  height: $touchWidth;
-  .fj-touch-left,
-  .fj-touch-right {
+  height: 30px;
+}
+
+.fj-touch-left,.fj-touch-right {
     opacity: 0.8;
     position: absolute;
-    height: $touchWidth;
-    width: $touchWidth;
-    border-radius: 25rpx;
+    height: 30px;
+    width: 30px;
+    border-radius: 15px;
     background: rgb(177, 177, 248);
     z-index: 3;
   }
+ 
   .tip{
-    display: block;
     position: absolute;
-    padding:10rpx 20rpx;background: rgba(0,0,0,0.6);color:#fff;
-    top:-80rpx;
-    border-radius: 10rpx;
-    min-width:100rpx;
-    text-align: center;
+    padding:10px;background: rgba(0,0,0,0.6);color:#fff;
+    top:0px;
+    border-radius: 10px;
+    z-index: 4;font-size: 10px;
+	justify-content:center
   }
+
   .fj-line, .fj-line-pull {
-    height: 10rpx;
+    height: 5px;
     background: #999;
-    margin-top: -5rpx;
     position: absolute;
-    top: 50%;
-    left: $touchWidth/2;
-    right: $touchWidth/2;
+    top:12px;
+    left: 15px;
+    right: 15px;
     z-index: 1;
   }
-  .fj-line-pull{z-index: 2;background: blue;}
-}
-</style>
+  .fj-line-pull{z-index: 2;background: #2F85FC;}
 
+</style>
 
 
 
