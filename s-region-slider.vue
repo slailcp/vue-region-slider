@@ -3,13 +3,14 @@
 	  <text class="loading" :style="{opacity: lineLeft===0 ? '1' : '0'}">loading...</text>
 	  <view class="fj-slider-box" :style="{opacity: lineLeft!==0 ? '1' : '0'}" clipchildren= false>
 		<view class="fj-value">
-			<text class="fj-v-l">¥{{sMinValue}}</text>
-			<text class="fj-v-r">¥{{sMaxValue}}</text>
+			<text class="fj-v-l">¥{{showMinNum}}</text>
+			<text class="fj-v-r">¥{{showMaxNum}}</text>
 		</view>
 		<text class="tip" :style="{left:`${tipLeft}px`,opacity: tipShow ? '1' : '0'}">{{curValue}}</text>
 		<view class="fj-slider" clipchildren= false>
 		  <view class="fj-line" ref="fj-line"></view>
-		  <view class="fj-line-pull" :style="{left: `${minLeft + touchWidth/2}px`, width:`${maxLeft - minLeft}px`}"></view>
+		  <view v-if="maxLeft-minLeft>=0" class="fj-line-pull" :style="{left: `${minLeft + touchWidth/2}px`, width:`${Math.abs(maxLeft - minLeft)}px`}"></view>
+		  <view v-else class="fj-line-pull" :style="{left: `${minLeft + touchWidth/2- Math.abs(maxLeft - minLeft) }px`, width:`${Math.abs(maxLeft - minLeft)}px`}"></view>
 		  <view
 			class="fj-touch-left" ref="fjtouchleft"
 			@touchstart="touchstart($event, 'min')"
@@ -88,6 +89,9 @@ export default {
 
       lineWidth:0, 
       lineLeft:0, 
+	  
+	  showMinNum:0,
+	  showMaxNum:0,
 
       curValue:0, 
       sMinValue:0, 
@@ -117,6 +121,9 @@ export default {
 				  this.sMaxValue =  this.maxValue; 
 				  this.minLeft = this.sMinValue / this.percentage;
 				  this.maxLeft = this.sMaxValue / this.percentage;
+				  
+				  this.showMaxNum = this.sMaxValue
+				  this.showMinNum = this.sMinValue
 			}
 		})
 	})
@@ -159,8 +166,8 @@ export default {
         ...e,
         custom:{
           type,
-          minValue: this.sMinValue,
-          maxValue: this.sMaxValue
+          minValue: this.showMinNum,
+          maxValue: this.showMaxNum
         }
       })
     },
@@ -176,16 +183,20 @@ export default {
       if(type === 'min'){
         this.minLeft = Math.floor(disX);
         if(this.minLeft < 0) { this.minLeft = 0; return; }
-        if(this.maxLeft - this.minLeft <= this.touchWidth ) {this.minLeft = this.maxLeft - this.touchWidth; return;}
+        if(this.maxLeft > this.lineWidth) { this.maxLeft = this.lineWidth; return; }
+        //if(this.maxLeft - this.minLeft <= this.touchWidth ) {this.minLeft = this.maxLeft - this.touchWidth; return;}
         this.curValue = Math.floor(this.minLeft * this.percentage);
       }
       
       if(type === 'max'){
         this.maxLeft =  Math.ceil(disX);
+		if(this.minLeft < 0) { this.minLeft = 0; return; }
         if(this.maxLeft > this.lineWidth) { this.maxLeft = this.lineWidth; return; }
-        if(this.maxLeft - this.minLeft <= this.touchWidth ) {this.maxLeft = this.minLeft + this.touchWidth;return;}
+        // if(this.maxLeft - this.minLeft <= this.touchWidth ) {this.maxLeft = this.minLeft + this.touchWidth;return;}
         this.curValue = Math.round(this.maxLeft * this.percentage);
       }
+	  
+	  
       this.tipShow = true;
       this.tipLeft = Math.round(this.curValue / this.percentage);
 	  this.tipLeft = this.tipLeft >= this.lineWidth?this.lineWidth:this.tipLeft
@@ -194,8 +205,8 @@ export default {
         ...e,
         custom:{
           type,
-          minValue: this.sMinValue,
-          maxValue: this.sMaxValue,
+          minValue: this.showMinNum,
+          maxValue: this.showMaxNum,
           curValue: this.curValue,
         }
 
@@ -222,12 +233,21 @@ export default {
         }
       }
       this.tipShow = false;
+	  
+	  if(this.sMinValue <= this.sMaxValue) {
+		  this.showMaxNum = this.sMaxValue
+		  this.showMinNum = this.sMinValue
+	  }else{
+		  this.showMaxNum = this.sMinValue
+		  this.showMinNum = this.sMaxValue
+	  }
+	  
       this.$emit('up', {
         ...e, 
         custom:{
           type,
-          minValue: this.sMinValue,
-          maxValue: this.sMaxValue
+          minValue: this.showMinNum,
+          maxValue: this.showMaxNum
         }
       })
     },
