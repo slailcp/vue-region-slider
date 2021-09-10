@@ -70,10 +70,12 @@ export default {
   watch: {
     minValue(newVal, oldVla){
       this.sMinValue = this.minValue;
+      this.showMinNum = this.minValue;
       this.minLeft = this.sMinValue / this.percentage;
     },
     maxValue(newVal, oldVla){
       this.sMaxValue =  this.maxValue;
+      this.showMaxNum =  this.maxValue;
       this.maxLeft = this.sMaxValue / this.percentage;
     }
   },
