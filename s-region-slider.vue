@@ -54,6 +54,10 @@ export default {
       type: Number,
       default: 1000,
     },
+	fillMinValue: {
+	  type: Number,
+	  default: 0,
+	},
     minValue: { 
       type: Number,
       default: 0,
@@ -69,14 +73,26 @@ export default {
   },
   watch: {
     minValue(newVal, oldVla){
-      this.sMinValue = this.minValue;
-      this.showMinNum = this.minValue;
+		if(newVal < this.fillMinValue || this.maxValue > this.fillValue){
+			console.error(`请在${this.fillMinValue}-${this.fillValue}范围中设置`)
+			return;
+		}
+      this.sMinValue = newVal  - this.fillMinValue;
+      this.showMinNum = newVal;
       this.minLeft = this.sMinValue / this.percentage;
+	  console.log(this.sMinValue,this.minLeft)
     },
     maxValue(newVal, oldVla){
-      this.sMaxValue =  this.maxValue;
-      this.showMaxNum =  this.maxValue;
+		if(this.minValue<this.fillMinValue || newVal>this.fillValue){
+			console.error(`请在${this.fillMinValue}-${this.fillValue}范围中设置`)
+			return;
+		}
+      this.sMaxValue =  newVal  - this.fillMinValue;
+      this.showMaxNum =  newVal;
       this.maxLeft = this.sMaxValue / this.percentage;
+    },
+    fillValue(newVal, oldVla){
+      this.sFillValue =  this.fillValue;
     }
   },
   data() {
@@ -96,8 +112,12 @@ export default {
 	  showMaxNum:0,
 
       curValue:0, 
+	  
       sMinValue:0, 
       sMaxValue:0, 
+	  sFillValue:0,
+	  sFillMinValue:0,
+	  
       percentage: 0
     };
   },
@@ -116,16 +136,18 @@ export default {
 			fn:(ret)=>{
 				  this.lineWidth = ret.width;
 				  this.lineLeft = ret.left;// 
+				  
+				  this.sMinValue = (this.minValue - this.fillMinValue) >0 ? this.minValue - this.fillMinValue:0;
+				  this.sMaxValue =  (this.maxValue - this.fillMinValue) > 0 ? this.maxValue - this.fillMinValue: 0; 
+				  this.sFillValue = (this.fillValue - this.fillMinValue) >0 ?this.fillValue - this.fillMinValue:0;
 				 
-				  this.percentage = this.fillValue / this.lineWidth;
+				  this.percentage = this.sFillValue / this.lineWidth;
 				
-				  this.sMinValue = this.minValue;
-				  this.sMaxValue =  this.maxValue; 
 				  this.minLeft = this.sMinValue / this.percentage;
 				  this.maxLeft = this.sMaxValue / this.percentage;
 				  
-				  this.showMaxNum = this.sMaxValue
-				  this.showMinNum = this.sMinValue
+				  this.showMaxNum = this.sMaxValue + this.fillMinValue;
+				  this.showMinNum = this.sMinValue + this.fillMinValue;
 			}
 		})
 	})
@@ -200,9 +222,12 @@ export default {
 	  
 	  
       this.tipShow = true;
-      this.tipLeft = Math.round(this.curValue / this.percentage);
+      this.tipLeft = Math.round((this.curValue) / this.percentage);
 	  this.tipLeft = this.tipLeft >= this.lineWidth?this.lineWidth:this.tipLeft
 	  this.tipLeft = this.tipLeft <= 0?0:this.tipLeft
+	  
+	  this.curValue = this.curValue + this.fillMinValue;
+	  
       this.$emit('move', {
         ...e,
         custom:{
@@ -217,7 +242,7 @@ export default {
     touchend(e, type) {
       if(type === 'min') {
         if(this.step === 1){
-          this.sMinValue = this.curValue;
+          this.sMinValue = this.curValue - this.fillMinValue;
         }else{
           const stepnum = Math.round((this.minLeft * this.percentage) / this.step); 
           this.sMinValue = stepnum * this.step;
@@ -226,22 +251,22 @@ export default {
       }
       if(type === 'max') {
         if(this.step === 1){
-          this.sMaxValue = this.curValue;
+          this.sMaxValue = this.curValue - this.fillMinValue;
         }else{
           const stepnum = Math.round((this.maxLeft * this.percentage) / this.step);  
           this.sMaxValue = stepnum * this.step;
-          if(this.fillValue - this.sMaxValue < this.step) { this.sMaxValue =  this.fillValue} 
+          if(this.sFillValue - this.sMaxValue < this.step) { this.sMaxValue =  this.sFillValue} 
           this.maxLeft = this.sMaxValue / this.percentage;
         }
       }
       this.tipShow = false;
 	  
 	  if(this.sMinValue <= this.sMaxValue) {
-		  this.showMaxNum = this.sMaxValue
-		  this.showMinNum = this.sMinValue
+		  this.showMaxNum = this.sMaxValue + this.fillMinValue;
+		  this.showMinNum = this.sMinValue + this.fillMinValue;
 	  }else{
-		  this.showMaxNum = this.sMinValue
-		  this.showMinNum = this.sMaxValue
+		  this.showMaxNum = this.sMinValue + this.fillMinValue;
+		  this.showMinNum = this.sMaxValue + this.fillMinValue;
 	  }
 	  
       this.$emit('up', {
