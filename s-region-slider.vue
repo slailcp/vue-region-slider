@@ -3,8 +3,8 @@
 	  <text class="loading" :style="{opacity: lineLeft===0 ? '1' : '0'}">loading...</text>
 	  <view class="fj-slider-box" :style="{opacity: lineLeft!==0 ? '1' : '0'}" clipchildren= false>
 		<view class="fj-value">
-			<text class="fj-v-l">¥{{showMinNum}}</text>
-			<text class="fj-v-r">¥{{showMaxNum}}</text>
+			<text class="fj-v-l" :style="{color: showMinNum===fillMinValue ? '#333' : '#999'}">¥{{fillMinValue}}</text>
+			<text class="fj-v-r" :style="{color: showMaxNum===fillValue ? '#333' : '#999'}">¥{{fillValue}}</text>
 		</view>
 		<text class="tip" :style="{left:`${tipLeft}px`,opacity: tipShow ? '1' : '0'}">{{curValue}}</text>
 		<view class="fj-slider" clipchildren= false>
@@ -80,7 +80,6 @@ export default {
       this.sMinValue = newVal  - this.fillMinValue;
       this.showMinNum = newVal;
       this.minLeft = this.sMinValue / this.percentage;
-	  console.log(this.sMinValue,this.minLeft)
     },
     maxValue(newVal, oldVla){
 		if(this.minValue<this.fillMinValue || newVal>this.fillValue){
@@ -273,8 +272,8 @@ export default {
         ...e, 
         custom:{
           type,
-          minValue: this.showMinNum,
-          maxValue: this.showMaxNum
+          minValue: this.showMinNum < this.fillMinValue ?this.fillMinValue:this.showMinNum,
+          maxValue: this.showMaxNum > this.fillValue?this.fillValue:this.showMaxNum
         }
       })
     },
